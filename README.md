@@ -14,8 +14,8 @@ To run the pipeline, you'll need to provide a config.json file like this:
 {
     "libraries": {
         "Sample_3172-CV-hg19": {
-            "bam": "/path/to/library.bam",
-            "clusters": "/path/to/library.clusters.txt"
+            "bam": "/path/to/library.bam", # path to pruned library ATAC bam file (from snATAC pipeline)
+            "clusters": "/path/to/library.clusters.txt" # two-column TSV file (no header). First column is a barcode, second column is the cluster assignment for that barcode
         }
     }
 }
