@@ -3,7 +3,7 @@
 This pipeline processed snATAC-data data on a per-cluster pseudobulk basis.
 
 ## Dependencies
-[Singularity (v. 3)](https://docs.sylabs.io/guides/3.0/user-guide/) and [NextFlow](https://www.nextflow.io/) (>= v. 20.10.0). Containers with the software for each step are pulled from the Sylabs cloud library (https://cloud.sylabs.io/library) or Docker hub (https://hub.docker.com/).
+[Singularity (v. 3)](https://docs.sylabs.io/guides/3.0/user-guide/) and [NextFlow](https://www.nextflow.io/) (>= v. 20.10.0). Containers with the software for each step are pulled from the [Sylabs cloud library](https://cloud.sylabs.io/library) or [Docker hub](https://hub.docker.com/).
 
 
 ## Running
@@ -15,7 +15,7 @@ To run the pipeline, you'll need to provide a config.json file like this:
     "libraries": {
         "Sample_3172-CV-hg19": {
             "bam": "/path/to/library.bam", # path to pruned library ATAC bam file (from snATAC pipeline)
-            "clusters": "/path/to/library.clusters.txt" # two-column TSV file (no header). First column is a barcode, second column is the cluster assignment for that barcode
+            "clusters": "/path/to/library.clusters.txt" # two-column TSV file (no header). First column is *RNA* barcode, second column is the cluster assignment for that barcode
         }
     }
 }
@@ -26,12 +26,10 @@ You'll also need to update the `nextflow.config` file in this directory.
 Then run the pipeline:
 
 ```bin
-nextflow run -resume -params-file config.json --genome hg19 --gene_bed /path/to/gene-bed.bed --markers Myh1,Myh2,Myh4 --results /path/to/results /path/to/per-cluster-atac-processing/main.nf
+nextflow run -resume -params-file config.json --genome hg19 --atac_barcodes /path/to/atac-barcode-whitelist.txt.gz --rna_barcodes /path/to/rna-barcode-whitelist.txt.gz --markers Myh1,Myh2,Myh4 --results /path/to/results /path/to/per-cluster-atac-processing/main.nf
 ```
 
-Where `--genome` is the name of the reference genome to use, `--gene_bed` is a path to a BED12 file of gene locations (see example files for hg19 and mm10 in `data`), and `--markers` is a comma-separated list of marker genes of interest (these genes must be included in the `--gene_bed` file).
-
-You may wish to run under nohup so that the pipeline continues to run in the background and does not terminate upon logging out of the server (`nohup nextflow run ... &`)
+Where `--genome` is the name of the reference genome to use, and `--markers` is a comma-separated list of marker genes of interest (these genes must be included in the `gene_bed` file).
 
 ## Output
 * `bam/per-library-pass-qc-nuclei`: Bam files subsetted to pass QC barcodes (per-library)

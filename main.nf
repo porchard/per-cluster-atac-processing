@@ -1,7 +1,6 @@
 #!/usr/bin/env nextflow
 
 GENOME = params.genome
-GENE_BED = params.gene_bed
 MARKERS = params.markers
 
 nextflow.enable.dsl=2
@@ -68,8 +67,7 @@ def get_chrom_sizes (genome) {
 
 process aggregate_bam {
 
-	publishDir "${params.results}/bam/per-library-pass-qc-nuclei", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/bam/per-library-pass-qc-nuclei"
 	container "library://porchard/default/general:20220107"
 
 	input:
@@ -89,8 +87,7 @@ process aggregate_bam {
 
 process per_library_per_cluster_bam {
 
-	publishDir "${params.results}/bam/per-library-per-cluster", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/bam/per-library-per-cluster"
 	container "library://porchard/default/general:20220107"
 	maxForks 10
 
@@ -110,8 +107,7 @@ process per_library_per_cluster_bam {
 
 process merge_cluster {
 
-	publishDir "${params.results}/bam/per-cluster", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/bam/per-cluster"
 	container "library://porchard/default/general:20220107"
 	maxForks 5
 
@@ -130,8 +126,7 @@ process merge_cluster {
 
 process make_aggregate {
 
-	publishDir "${params.results}/bam/aggregate", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/bam/aggregate"
 	container "library://porchard/default/general:20220107"
 	maxForks 5
 
@@ -151,7 +146,6 @@ process make_aggregate {
 process bamtobed {
 
 	tag "${cluster}"
-	//container "docker://porchard/general:20220406125608"
 	container "library://porchard/default/general:20220107"
 	maxForks 5
 
@@ -170,10 +164,10 @@ process bamtobed {
 
 process call_peaks {
 
-	publishDir "${params.results}/peaks/broad", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/peaks/broad"
 	container "library://porchard/default/general:20220107"
 	tag "${cluster}"
+	memory '10 GB'
 
 	input:
 	tuple val(cluster), path(reads)
@@ -192,10 +186,10 @@ process call_peaks {
 
 process call_narrow_peaks {
 
-	publishDir "${params.results}/peaks/narrow", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/peaks/narrow"
 	container "library://porchard/default/general:20220107"
 	tag "${cluster}"
+	memory '10 GB'
 
 	input:
 	tuple val(cluster), path(reads)
@@ -215,9 +209,9 @@ process call_narrow_peaks {
 
 process lafave_summit_processing {
 
-	publishDir "${params.results}/peaks/summit-extension", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/peaks/summit-extension"
 	container "library://porchard/default/general:20220107"
+	memory '10 GB'
 
 	input:
 	tuple val(cluster), path(summits)
@@ -236,8 +230,7 @@ process lafave_summit_processing {
 
 process cluster_bigwigs {
 
-	publishDir "${params.results}/bigwig", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/bigwig"
 	container "library://porchard/default/general:20220107"
 	memory '50 GB'
 	tag "${cluster}"
@@ -259,8 +252,7 @@ process cluster_bigwigs {
 
 process plot_marker_genes {
 
-	publishDir "${params.results}/plot-marker-gene-signal", mode: 'rellink'
-	//container "docker://porchard/general:20220406125608"
+	publishDir "${params.results}/plot-marker-gene-signal"
 	container "library://porchard/default/general:20220107"
 	memory '20 GB'
 
@@ -303,5 +295,5 @@ workflow {
 	summits = call_narrow_peaks(read_beds).summits | lafave_summit_processing
 	
 	bigwigs = peaks.bedgraph | cluster_bigwigs
-	plot_marker_genes(bigwigs.map({it -> it[1]}).toSortedList(), MARKERS, Channel.fromPath(GENE_BED))
+	plot_marker_genes(bigwigs.map({it -> it[1]}).toSortedList(), MARKERS, Channel.fromPath(params.gene_bed[GENOME]))
 }
